@@ -56,7 +56,7 @@ val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 class FAANGModel(nn.Module):
     def __init__(self):
         super().__init__()
-        nn.Sequential(
+        self.net = nn.Sequential(
             nn.Linear(3, 64),
             nn.ReLU(),
             nn.Linear(64, 32),
@@ -65,4 +65,4 @@ class FAANGModel(nn.Module):
         )
 
     def forward(self, x):
-        return self.x
+        return self.net(x)
