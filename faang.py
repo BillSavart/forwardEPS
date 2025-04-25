@@ -59,10 +59,67 @@ class FAANGModel(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(3, 64),
             nn.ReLU(),
+            nn.Dropout(0.3),
             nn.Linear(64, 32),
             nn.ReLU(),
+            nn.Dropout(0.3),
             nn.Linear(32, 1)
         )
 
     def forward(self, x):
         return self.net(x)
+    
+# Initialize the model, loss function and optimizer
+criterion = nn.MSELoss()
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f'Using device: {device}')
+model = FAANGModel()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training the model
+epochs = 100
+
+for epoch in range(epochs):
+    model.train()
+    running_loss = 0.0
+    for X_batch, y_batch in train_loader:
+        optimizer.zero_grad()
+        outputs = model(X_batch)
+        loss = criterion(outputs, y_batch)
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
+
+    print(f'Epoch {epoch+1}/{epochs}, Loss: {running_loss/len(train_loader)}')
+
+# Validation
+model.eval()
+val_loss = 0.0
+with torch.no_grad():
+    for X_batch, y_batch in val_loader:
+        outputs = model(X_batch)
+        loss = criterion(outputs, y_batch)
+        val_loss += loss.item()
+print(f'Validation Loss: {val_loss/len(val_loader)}')
+
+# Plotting the results
+model.eval()
+predictions = []
+actuals = []
+with torch.no_grad():
+    for X_batch, y_batch in val_loader:
+        outputs = model(X_batch)
+        predictions.append(outputs.numpy())
+        actuals.append(y_batch.numpy())
+predictions = np.concatenate(predictions)
+actuals = np.concatenate(actuals)
+predictions = scaler_y.inverse_transform(predictions)
+actuals = scaler_y.inverse_transform(actuals)
+plt.figure(figsize=(10, 5))
+plt.plot(actuals, label='Actual Prices')
+plt.plot(predictions, label='Predicted Prices')
+plt.title('FAANG Stock Price Prediction')
+plt.xlabel('Samples')
+plt.ylabel('Price')
+plt.legend()
+plt.show()
