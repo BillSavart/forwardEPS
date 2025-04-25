@@ -24,7 +24,7 @@ def collect_and_save():
         "ForwardEPS": forward_eps
     }])
 
-    file = "2330_daily_data.csv"
+    file = "train/2330_daily_data.csv"
     header = not os.path.exists(file)
 
     data.to_csv(file, mode='a', header=header, index=False)
